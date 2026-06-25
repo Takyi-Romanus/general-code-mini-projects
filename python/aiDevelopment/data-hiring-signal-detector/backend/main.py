@@ -1,0 +1,75 @@
+import json
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+from scraper import fetch_jobs_for_company
+from analyzer import analyze_jobs
+
+app = FastAPI(title="Hiring Signal Detector")
+
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+WATCHLIST_PATH = Path(__file__).parent.parent / "watchlist.json"
+
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+
+@app.get("/", response_class=FileResponse)
+def index():
+    return FRONTEND_DIR / "index.html"
+
+
+@app.get("/watchlist")
+def get_watchlist():
+    with open(WATCHLIST_PATH) as f:
+        return json.load(f)
+
+
+class WatchlistEntry(BaseModel):
+    company: str
+    location: str = "United States"
+
+
+@app.post("/watchlist")
+def add_to_watchlist(entry: WatchlistEntry):
+    with open(WATCHLIST_PATH) as f:
+        watchlist = json.load(f)
+    if any(e["company"].lower() == entry.company.lower() for e in watchlist):
+        raise HTTPException(status_code=409, detail=f"{entry.company} is already in the watchlist")
+    watchlist.append({"company": entry.company, "location": entry.location})
+    with open(WATCHLIST_PATH, "w") as f:
+        json.dump(watchlist, f, indent=2)
+    return watchlist
+
+
+class AnalyzeRequest(BaseModel):
+    company: str
+    location: str = "United States"
+
+
+@app.post("/analyze")
+def analyze(req: AnalyzeRequest):
+    try:
+        jobs = fetch_jobs_for_company(req.company, req.location)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Bright Data error: {e}")
+
+    if not jobs:
+        raise HTTPException(status_code=404, detail=f"No job postings found for {req.company}")
+
+    try:
+        brief = analyze_jobs(req.company, jobs)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Gemini error: {e}")
+
+    return {"company": req.company, "job_count": len(jobs), "brief": brief}
