@@ -4,3 +4,4 @@ btn.addEventListener("click", () => {
   const userName = prompt("What is your name?", "Guest");
   output.textContent = "Hello, " + userName + "!";
 });
+

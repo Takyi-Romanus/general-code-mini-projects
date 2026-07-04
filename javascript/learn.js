@@ -188,3 +188,101 @@ let trimmedEnd = greeting.trimEnd();
 console.log(trimmedEnd);  // "   Hello!"
 
 // String formatter
+const userInput = "   Hello World!   ";
+console.log("Original input:");
+console.log(userInput);
+
+const cleanedInput = userInput.trim();
+console.log("Result of trimming whitespace from both ends:");
+console.log(cleanedInput);
+
+const trimmedStart = userInput.trimStart();
+console.log("After using the trimStart() method, leading spaces removed:");
+console.log(trimmedStart);
+
+const trimmedEnd = userInput.trimEnd();
+console.log("After using the trimEnd() method, trailing spaces removed:");
+console.log(trimmedEnd);
+
+const upperCaseInput = cleanedInput.toUpperCase();
+console.log("Result of using the toUpperCase() method:");
+console.log(upperCaseInput);
+
+const lowerCaseInput = cleanedInput.toLowerCase();
+console.log("Result of using the toLowerCase() method:");
+console.log(lowerCaseInput);
+
+const lowercaseWord = "camelcase";
+const camelCasedVersion = lowercaseWord.slice(0, 5) + lowercaseWord[5].toUpperCase() + lowercaseWord.slice(-3);
+console.log("Camel cased version:");
+console.log(camelCasedVersion);
+
+// String Modification Methods
+string.replace(searchValue, newValue);
+
+let text = "I love JavaScript!";
+console.log(text); // "I love JavaScript!"
+let newText = text.replace("JavaScript", "coding");
+console.log(newText);  // "I love coding!"
+
+let sentence = "I enjoy working with JavaScript.";
+console.log(sentence);  // "I enjoy working with JavaScript."
+let updatedSentence = sentence.replace("javascript", "coding");
+console.log(updatedSentence);  // "I enjoy working with JavaScript."
+
+let phrase = "Hello, world! Welcome to the world of coding.";
+console.log(phrase);  // "Hello, world! Welcome to the world of coding."
+let updatedPhrase = phrase.replace("world", "universe");
+console.log(updatedPhrase);  // "Hello, universe! Welcome to the world of coding."
+
+// Repeating a String x Number of Times?
+string.repeat(count);
+
+let word = "Hello!";
+let repeatedWord = word.repeat(3);
+console.log(repeatedWord);  // "Hello!Hello!Hello!"
+
+let word = "Test";
+console.log(word.repeat(-1));  // Throws RangeError: Invalid count value
+
+let word = "Test";
+console.log(word.repeat(Infinity));  // Throws RangeError: Invalid count value
+
+let word = "Test";
+console.log(word.repeat(2.5));  // "TestTest"
+
+let word = "Test";
+console.log(word.repeat(0));  // ""
+
+let count = 4;
+let word = "Test";
+let repeatedWord = word.repeat(count);
+console.log(repeatedWord); // TestTestTestTest
+
+// String transformer
+const originalString = "I love cats.";
+console.log("Original string:");
+console.log(originalString);
+
+const replacedString = originalString.replace("cats", "dogs");
+console.log("After using the replace() method:");
+console.log(replacedString);
+
+const exampleSentence = "I love cats and cats are so much fun!";
+console.log("Original sentence:");
+console.log(exampleSentence);
+
+const dogsOnlySentence = exampleSentence.replaceAll("cats", "dogs");
+console.log("Replacing all occurrences of cats with dogs:");
+console.log(dogsOnlySentence);
+
+const learningSentence = "I love learning!";
+console.log("Original learning sentence:");
+console.log(learningSentence);
+
+const repeatedLove = "love ".repeat(3).trimEnd();
+console.log(repeatedLove);
+
+const newSentence = `I ${repeatedLove} learning.`;
+console.log(newSentence);
+
