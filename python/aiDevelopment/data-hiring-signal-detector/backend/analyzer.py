@@ -36,6 +36,9 @@ Respond ONLY with valid JSON in this exact schema:
 
 def analyze_jobs(company: str, jobs: list[dict]) -> dict:
     """Pass job listing data to Gemini 2.5 Pro and return a structured intelligence brief."""
+    if not GEMINI_API_KEY:
+        raise RuntimeError("GEMINI_API_KEY is not set. Add it to .env and restart the server.")
+
     client = genai.Client(api_key=GEMINI_API_KEY)
 
     jobs_text = json.dumps(
@@ -65,4 +68,7 @@ def analyze_jobs(company: str, jobs: list[dict]) -> dict:
         ),
     )
 
-    return json.loads(response.text)
+    try:
+        return json.loads(response.text)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Gemini returned non-JSON output: {response.text[:500]}") from exc

@@ -9,6 +9,9 @@ BASE_URL = "https://api.brightdata.com/datasets/v3"
 
 
 def _headers() -> dict:
+    if not BRIGHT_DATA_API_KEY:
+        raise RuntimeError("BRIGHT_DATA_API_KEY is not set. Add it to .env and restart the server.")
+
     return {
         "Authorization": f"Bearer {BRIGHT_DATA_API_KEY}",
         "Content-Type": "application/json",
@@ -51,8 +54,14 @@ def fetch_jobs_for_company(company: str, location: str = "United States") -> lis
     }
 
     with httpx.Client(timeout=60) as client:
-        resp = client.post(url, json=payload, headers=_headers())
-        resp.raise_for_status()
+        try:
+            resp = client.post(url, json=payload, headers=_headers())
+            resp.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            body = exc.response.text[:500]
+            raise RuntimeError(
+                f"Bright Data returned {exc.response.status_code}: {body}"
+            ) from exc
         records = resp.json()
 
     jobs = [_normalize_job(record, company) for record in records if isinstance(record, dict)]
