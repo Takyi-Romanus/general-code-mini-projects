@@ -1,4 +1,4 @@
-package atmMachine;
+package java.atmMachine;
 import  java.io.IOException;
 
 public class ATM extends OptionMenu{

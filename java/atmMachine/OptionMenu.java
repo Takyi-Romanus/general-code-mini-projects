@@ -1,4 +1,4 @@
-package atmMachine;
+package java.atmMachine;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;

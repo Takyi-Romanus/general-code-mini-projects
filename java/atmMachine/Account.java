@@ -1,4 +1,4 @@
-package atmMachine;
+package java.atmMachine;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
