@@ -4,7 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
-
+        {
+            "type": "java",
+            "name": "searchInFile",
+            "request": "launch",
+            "mainClass": "searchInFile",
+            "projectName": "GENERAL CODE_88ab17c"
+        },
+        {
+            "type": "java",
+            "name": "SearchInFile",
+            "request": "launch",
+            "mainClass": "SearchInFile",
+            "projectName": "GENERAL CODE_88ab17c"
+        }
     ]
 }
