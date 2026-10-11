@@ -1,0 +1,368 @@
+pip install xformers
+import nltk
+import string
+import re
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+nltk.download("punkt")
+nltk.download("stopwords")
+nltk.download("wordnet")
+
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+lemmatizer = WordNetLemmatizer()
+stop_words = stopwords.words("english")
+stemmer = PorterStemmer()
+
+reviews = [
+    "The product is fantastic! It works like a charm.",
+    "I hated the product. It broke after one use.",
+    "Product was okay, not the best, but fine overall."
+]
+
+reviews2 = [
+    "I love this phone! The battery life is amazing.",
+    "Terrible camera quality, but the battery lasts long.",
+    "Excellent performance and great camera.",
+    "Battery life could be better, but overall good value.",
+    "Camera is sharp and battery is decent."
+]
+
+# Preprocess the reviews
+def preprocessA(text: str) -> str:
+    if not isinstance(text, str):
+        return ""
+    text = text.lower()
+    text = re.sub(r'\d+', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+cleaned_reviewsA = [preprocessA(review) for review in reviews]
+
+vectorizer1 = CountVectorizer()
+
+# Fit the vectorizer
+vectorizer1.fit(cleaned_reviewsA)
+
+# Print the vocabulary 
+print(vectorizer1.get_feature_names_out())
+
+# Transform the reviews
+bow_matrix = vectorizer1.transform(cleaned_reviewsA)
+
+#Print the BoW representation
+print(bow_matrix.toarray())
+
+def preprocess(text, remove_stopwords: bool = False ):
+    text = text.lower()
+    tokens = word_tokenize(text)
+    tokens = [word for word in tokens if word not in string.punctuation]
+    if remove_stopwords:
+        stop_words = set(stopwords.words('english'))
+        tokens = [word for word in tokens if word not in stop_words]
+    return " ".join(tokens)
+
+def preprocessB(text, remove_stopwords: bool = False ):
+    text = text.lower()
+    tokens = word_tokenize(text)
+    tokens = [word for word in tokens if word not in string.punctuation]
+    tokens = [word for word in tokens if word not in stop_words]
+    return " ".join(tokens)
+
+def get_top_ten(words, counts):
+    # Sort words by frequency
+    sorted_indices = np.argsort(counts)[::-1]
+    top_indices = sorted_indices[:10]
+    top_words = [words[i] for i in top_indices]
+    top_counts = [counts[i] for i in top_indices]
+    return top_words, top_counts
+
+cleaned_reviews_with_stopwords = [preprocess(review, remove_stopwords=False) for review in reviews2]
+X = vectorizer.fit_transform(cleaned_reviews_with_stopwords)
+# Get word counts
+word_counts = np.sum(X.toarray(), axis=0)
+# Get words
+words = vectorizer.get_feature_names_out()
+
+cleaned_reviews_without_stopwords = [preprocess(review, remove_stopwords=True) for review in reviews2]
+Y = vectorizer.fit_transform(cleaned_reviews_with_stopwords)
+words_without_counts = np.sum(Y.toarray(), axis=0)
+words_without = vectorizer.get_feature_names_out()
+
+top_words_with_stopwords, top_counts_with_stopwords = get_top_ten(words, word_counts)
+print(top_words_with_stopwords, top_counts_with_stopwords)
+
+top_words_without_stopwords, top_counts_without_stopwords = get_top_ten(words_without, words_without_counts)
+print(top_words_without_stopwords, top_counts_without_stopwords)
+
+plt.bar(words, word_counts)
+plt.title("Word Frequencies in Movie Reviews")
+plt.xlabel("Words")
+plt.ylabel("Frequency")
+plt.show()
+
+# Plot the frequencies with stop words
+plt.bar(top_words_with_stopwords, top_counts_with_stopwords)
+plt.title("Top 10 word frequencies (with stop words)")
+plt.xlabel("Words")
+plt.ylabel("Frequency")
+plt.show()
+
+# Plot the frequencies without stop words
+plt.figure()
+plt.bar(top_words_without_stopwords, top_counts_without_stopwords)
+plt.title("Top 10 word frequencies (without stop words)")
+plt.xlabel("Words")
+plt.ylabel("Frequency")
+plt.show()
+
+# Convert BoW matrix to a DataFrame
+count_vectorizer = CountVectorizer()
+bow_matrix = count_vectorizer.fit_transform(cleaned_reviewsB)
+
+df_bow = pd.DataFrame(
+    bow_matrix.toarray(),
+    columns=count_vectorizer.get_feature_names_out()
+)
+
+# Plot the heatmap
+plt.figure(figsize=(10, 6))
+sns.heatmap(df_bow, annot=True)
+plt.title("BoW Scores Across Reviews")
+plt.xlabel("Terms")
+plt.xticks(rotation=45)
+plt.ylabel("Documents")
+plt.show()
+
+#TF-IDF
+'''TF-IDFTF: Term FrequencyHow many times a word appears in a document
+NATURAL LANGUAGE PROCESSING (NLP) IN PYTHONTF-IDFTF: Term FrequencyHow many times a word appears in a documentIDF: Inverse Document FrequencyHow rare that word is across all documentsWord shows up in one document, not in others → high scoreWord appears in every document → low score'''
+
+reviewsB = ["The smart speaker is incredible. Clear sound and fast responses!",
+           "I am disappointed with the smart bulb. It stopped working in a week.",
+           "The thermostat is okay. Not too smart, but functional."]
+cleaned_reviewsB = [preprocess(review) for review in reviewsB]
+
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(cleaned_reviewsB)
+print(tfidf_matrix)
+print(tfidf_matrix.toarray())
+vectorizer.get_feature_names_out()
+
+# Convert tfidf matrix to a DataFrame
+df_tfidf = pd.DataFrame(   
+    tfidf_matrix.toarray(),    
+    columns=vectorizer.get_feature_names_out())
+
+sns.heatmap(df_tfidf, annot=True)
+plt.title("TF-IDF Scores Across Reviews")
+plt.xlabel("Terms")
+plt.ylabel("Documents")
+plt.show()
+
+#EMBEDDING
+'''
+Limitations of BoW and TF-IDFT
+1. reating similar words as completely unrelated
+2. Failing to capture meaning of text
+'''
+'''
+embeddings Represent a word with a vector that captures its meaning
+Represent a word with a vector that captures its meaningAssigns random values to each word
+Represent a word with a vector that captures its meaningAssigns random values to each wordRefines values by predicting missing words in sentences
+Represent a word with a vector that captures its meaningAssigns random values to each wordRefines values by predicting missing words in sentencesWords appearing in similar contexts end up with similar representations
+'''
+
+#Gensim (models)
+'''
+Provides popular embedding models
+1. Word2Vec
+word2vec-ruscorpora-300
+word2vec-google-news-300
+
+2. GloVe
+glove-wiki-gigaword-50
+glove-wiki-gigaword-100
+glove-wiki-gigaword-200
+glove-wiki-gigaword-300...
+'''
+#Loading an embedding model
+import gensim.downloader as api
+model = api.load('glove-wiki-gigaword-50')
+print(type(model))
+print(model['movie'])
+
+#Computing similarity
+similarity = model.similarity("film", "movie")
+print(similarity)
+
+#Finding most similar words
+similar_to_movie = model.most_similar('movie', topn=3)
+print(similar_to_movie)
+
+#Visualizing embeddings with PCA
+from sklearn.decomposition import PCA
+words = ["film", "movie", "dog", "cat", "car", "bus"]
+word_vectors = [model[word] for word in words]
+pca = PCA(n_components=2)
+word_vectors_2d = pca.fit_transform(word_vectors)
+plt.scatter(word_vectors_2d[:, 0], word_vectors_2d[:, 1])
+for word, (x, y) in zip(words, word_vectors_2d):    
+    plt.annotate(word, (x, y))
+plt.show()
+
+#examples
+# Compute similarity between "king" and "queen"
+similarity_score = model.similarity("king","queen")
+
+print(similarity_score)
+
+# Get top 10 most similar words to "computer"
+similar_words = model.most_similar("computer", topn =10)
+
+print(similar_words)
+
+words = ["lion", "tiger", "leopard", "banana", "strawberry", "truck", "car", "bus"]
+
+# Extract word embeddings
+word_vectors = [model[word] for word in words]
+
+# Reduce dimensions with PCA
+pca = PCA(n_components=2)
+word_vectors_2d = pca.fit_transform(word_vectors)
+
+plt.scatter(word_vectors_2d[:, 0], word_vectors_2d[:, 1])
+for word, (x, y) in zip(words, word_vectors_2d):
+    plt.annotate(word, (x, y))
+    plt.title("GloVe Wikipedia Word Embeddings (2D PCA)")
+plt.show()
+
+'''
+Huggingface pipeline
+using huggingface models to fasttrack the NLP process from preprocessing to feature extraction and models for the said task
+Pipelines for sentiment analysis
+Text classification task
+Predicts if text expresses positive or negative emotion
+
+@ huggingface.co/models
+'''
+
+from transformers import pipeline
+classification_pipeline = pipeline(  task="sentiment-analysis", # or text-classification
+model="distilbert/distilbert-base-uncased-finetuned-sst-2-english")
+result = classification_pipeline("I really liked the movie!!")
+print(result)
+
+#Sentiment analysis on a batch of texts
+texts = ["I really liked the movie!!",
+         "Great job ruining my day.",
+         "This product exceeded my expectations.",
+         "Wow, just what I needed... another problem.", 
+         "Absolutely fantastic experience!"]
+results = classification_pipeline(texts)
+print(results)
+
+#Assessing sentiment analysis models
+texts = ["I really liked the movie!!",
+         "Great job ruining my day.",
+         "This product exceeded my expectations.",
+         "Wow, just what I needed... another problem.",
+         "Absolutely fantastic experience!"]
+true_labels = ["POSITIVE", "NEGATIVE", "POSITIVE", "NEGATIVE", "POSITIVE"]
+results = classification_pipeline(texts)
+predicted_labels = [result['label'] for result in results]
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(true_labels, predicted_labels)
+print(f"Accuracy: {accuracy}")
+
+#Zero-shot classification pipeline
+'''
+Zero-shot classification
+Allows model to assign text to labels it hasn't seen before
+Uses natural language prediction get theoutput
+Useful for: Content tagging
+            Customer support
+            Filtering news articles
+'''
+from transformers import pipeline
+zero_shot_classifier = pipeline(  task="zero-shot-classification",  model="MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli")
+text = "The national football team won the cup yesterday."
+candidate_labels = ["sports", "technology", "health"]
+result = zero_shot_classifier(text, candidate_labels)
+print(result)
+
+'''
+Question natural language inference (QNLI)
+Determines whether the answer to aquestion can be found in a passage
+Useful for: Document search
+            Chatbots
+            Information retrieval
+'''
+#QNLI pipeline
+from transformers import pipeline
+qnli_pipeline = pipeline(    task="text-classification",     model="cross-encoder/qnli-electra-base"    )
+passage = "Penguins are found primarily in the Southern Hemisphere."
+question = "Where do penguins live?"
+result = qnli_pipeline({"text": question, "text_pair": passage})
+print(result)
+
+from transformers import pipeline
+qnli_pipeline = pipeline(    task="text-classification",     model="cross-encoder/qnli-electra-base"    )
+passage = "Penguins are found primarily in the Southern Hemisphere."
+question = "What is the capital of Paris?"
+result = qnli_pipeline({"text": question, "text_pair": passage})
+print(result)
+
+'''
+Question similarity
+Identifies when two questions areparaphrases
+Useful for: Deduplication
+            Clustering similar questions
+            Improving search accuracy 
+Done with models trained on the Quora Question Pairs (QQP) dataset
+'''
+
+#QQP pipeline
+from transformers import pipeline
+qqp_pipeline = pipeline(    task="text-classification",     model="textattack/bert-base-uncased-QQP"    )
+question1 = "How can I learn Python?"
+question2 = "What is the best way to study Python?"
+result = qqp_pipeline({"text": question1, "text_pair": question2})
+print(result)
+
+from transformers import pipeline
+qqp_pipeline = pipeline(    task="text-classification",     model="textattack/bert-base-uncased-QQP"    )
+question1 = "How can I learn Python?"
+question2 = "What is the capital of France?"
+result = qqp_pipeline({"text": question1, "text_pair": question2})
+print(result)
+
+'''
+Assessing grammatical correctness
+Assess how much a text is grammaticallycorrect
+Useful for: Educational tools
+            Grammar checkers
+            Writing assistants
+Done with models trained on the Corpus ofLinguistic Acceptability (CoLA) dataset
+'''
+
+#CoLA pipeline
+from transformers import pipeline
+cola_classifier = pipeline(  task="text-classification",   model="textattack/distilbert-base-uncased-CoLA")
+result = cola_classifier("The cat sat on the mat.")
+print(result)
+
+from transformers import pipeline
+cola_classifier = pipeline(  task="text-classification",   model="textattack/distilbert-base-uncased-CoLA")
+result = cola_classifier("The cat on sat mat the.")
+print(result)
+
