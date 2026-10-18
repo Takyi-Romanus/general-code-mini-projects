@@ -366,3 +366,162 @@ cola_classifier = pipeline(  task="text-classification",   model="textattack/dis
 result = cola_classifier("The cat on sat mat the.")
 print(result)
 
+
+##Token classification
+'''
+Text versus token classification
+Text classification Classifies entire sentences or pairs of texts
+Token classification Assigns labels to tokens within a sentence
+Named entity recognition (NER)
+Part of speech (PoS) tagging
+Named entity recognition (NER)Identifies entities like names, locations, organizations, dates, and moreUseful in:Information retrievalQuestion answering
+NER in code
+'''
+from transformers import pipeline
+ner_pipeline = pipeline(task="ner",                        
+                        model="dslim/bert-base-NER", 
+                        grouped_entities=True)
+ner_results = ner_pipeline("Zara Venn established NovaCore Dynamics in London.")
+print(ner_results)
+
+'''
+Part of speech (PoS) tagging
+Assigns grammatical roles (noun, verb, adjective) to each word
+Useful in:  Syntactic parsing
+            Grammar correction
+            Text generation
+PoS tagging in code
+'''
+pos_pipeline = pipeline(task="token-classification",
+                        model="vblagoje/bert-english-uncased-finetuned-pos",
+                        grouped_entities=True)
+pos_results = pos_pipeline("Zara Venn established NovaCore Dynamics in London.")
+print(pos_results)
+
+from transformers import pipeline
+# Create the NER pipeline
+ner_pipeline = pipeline(
+    task="ner",
+    model="dslim/bert-base-NER",
+    grouped_entities=True
+)
+headline = "Apple is planning to open a new office in San Francisco next year."
+
+# Get named entities
+entities = ner_pipeline(headline)
+
+for entity in entities:
+    print(f"{entity['entity_group']}: {entity['word']}")
+
+#Question answering
+'''
+Extractive QA
+    Answer directly copied from the passage
+Useful in:  Search engines
+            Document retrieval systems
+            Reading comprehension apps
+More accurate, less prone to errors
+
+Abstractive QA
+    Model generates natural-sounding answer
+Useful in:  Conversational agents
+            Virtual assistants
+            Customer support bots
+Can introduce errors
+
+'''
+from transformers import pipeline
+
+# Create the question-answering pipeline (extractive QA)
+qa_pipeline = pipeline(
+    task="question-answering",
+    model="distilbert/distilbert-base-cased-distilled-squad"
+)
+
+context = """This smartphone features a 6.5-inch OLED display, 128GB of storage, and a 48MP camera with night mode. It supports 5G connectivity and has a battery life of up to 24 hours."""
+
+question = "What is the size of the smartphone's display?"
+
+# Get the answer
+result = qa_pipeline(question=question, context=context)
+print(result)
+
+from transformers import pipeline
+
+# Create the abstractive question-answering pipeline
+qa_pipeline = pipeline(
+    task="text2text-generation",
+    model="fangyuan/hotpotqa_abstractive"
+)
+
+context = """This smartphone features a 6.5-inch OLED display, 128GB of storage, and a 48MP camera with night mode. It supports 5G connectivity and has a battery life of up to 24 hours."""
+
+question = "What is the size of the smartphone's display?"
+
+# Generate abstractive answer
+result = qa_pipeline(f"question: {question} context: {context}")
+print(result)
+
+# Sequencegeneration tasks
+'''
+Sequence generation
+Produces new text based on given input
+Includes tasks like:Text summarization
+                    Text translation
+                    Language modeling
+
+Text summarization
+Condenses long documents into shorterversions highlighting key points
+Useful when dealing with:Lengthy news articles
+                        Research papers
+                        Reports
+                        Emails
+
+Text translation
+Converts text from one language toanother
+Crucial in multilingual applications:International websites
+                                     Customer support tools
+
+Language modeling
+Predict the next words based on a given prompt
+Basis for many applications:Autocompletion
+                            Story generation
+                            Chatbot replies
+                            
+'''
+from transformers import pipeline
+
+# Create the summarization pipeline
+summarizer = pipeline(task="summarization", model="cnicu/t5-small-booksum")
+
+article = """NASA's Perseverance rover has successfully collected its first rock samples from Mars, marking a significant milestone in the mission. The samples will be stored for potential return to Earth in the future, providing valuable insight into the planet's geology and potential signs of past microbial life."""
+
+# Generate the summary
+summary = summarizer(article)
+
+print(summary)
+
+from transformers import pipeline
+
+# Create the translation pipeline
+translator = pipeline(task="translation", model="Helsinki-NLP/opus-mt-en-fr")
+
+review = "The hotel was clean and the staff were very friendly."
+
+# Translate the review
+translation = translator(review)
+
+print(translation)
+
+from transformers import pipeline
+
+# Create the pipeline
+autocomplete = pipeline(task="text-generation", model="distilgpt2")
+
+prompt = "Best books to read for"
+
+# Generate search query completions
+suggestions = autocomplete(prompt)
+
+for suggestion in suggestions:
+    print(suggestion['generated_text'])
