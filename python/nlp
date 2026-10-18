@@ -521,7 +521,7 @@ autocomplete = pipeline(task="text-generation", model="distilgpt2")
 prompt = "Best books to read for"
 
 # Generate search query completions
-suggestions = autocomplete(prompt)
+suggestions = autocomplete(prompt,max_length=8,num_return_sequences=5)
 
 for suggestion in suggestions:
     print(suggestion['generated_text'])
